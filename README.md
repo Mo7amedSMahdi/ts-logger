@@ -22,9 +22,9 @@ A powerful, modular, and extensible TypeScript logger designed for modern web an
 ## 📦 Installation
 
 ```bash
-pnpm add ts-logger
+pnpm add @mohamed-s/ts-logger
 # or
-yarn add ts-logger
+yarn add @mohamed-s/ts-logger
 ```
 
 ---
@@ -36,9 +36,7 @@ yarn add ts-logger
 **`src/utils/loggerInstance.ts`**
 
 ```ts
-import { Logger } from '../core/Logger';
-import { ConsoleSink, MemorySink } from '../core/sinks';
-import { SentrySink } from '../core/sentrySink';
+import { Logger, ConsoleSink, MemorySink, SentrySink } from '@mohamed-s/ts-logger';
 
 export const logger = new Logger({
   minLevel: 'DEBUG',
@@ -112,7 +110,7 @@ new RemoteSink('https://your-api.com/logs', {
 ### 📁 FileSink (Node.js only)
 
 ```ts
-import { FileSink } from '../core/fileSink';
+import { FileSink } from '@mohamed-s/ts-logger';
 new FileSink('./logs/app.log');
 ```
 
