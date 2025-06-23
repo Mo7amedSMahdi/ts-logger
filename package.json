@@ -1,5 +1,5 @@
 {
-  "name": "ts-logger-utils",
+  "name": "ts-logger",
   "version": "1.0.0",
   "description": "A flexible and testable TypeScript logger with support for custom sinks, rate limiting, and source tagging.",
   "main": "./dist/index.js",
