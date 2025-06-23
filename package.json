@@ -1,10 +1,14 @@
 {
   "name": "@mohamed-s/ts-logger",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A flexible and testable TypeScript logger with support for custom sinks, rate limiting, and source tagging.",
   "main": "./dist/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mo7amedSMahdi/ts-logger"
+  },
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
