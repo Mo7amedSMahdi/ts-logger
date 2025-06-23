@@ -1,6 +1,5 @@
 // src/core/sentrySink.ts
 import type { LogSink, LogRecord } from '../types/logger';
-import * as Sentry from '@sentry/browser'; // or '@sentry/node' in backend
 
 export interface SentrySinkOptions {
   dsn: string;
@@ -17,7 +16,8 @@ const LEVEL_PRIORITY: Record<string, number> = {
   ERROR: 3,
 };
 
-const SENTRY_LEVEL_MAP: Record<string, Sentry.SeverityLevel> = {
+// Use string literal instead of Sentry type
+const SENTRY_LEVEL_MAP: Record<string, 'debug' | 'info' | 'warning' | 'error'> = {
   DEBUG: 'debug',
   INFO: 'info',
   WARN: 'warning',
@@ -27,19 +27,32 @@ const SENTRY_LEVEL_MAP: Record<string, Sentry.SeverityLevel> = {
 export class SentrySink implements LogSink {
   private threshold: number;
   private includeArgsInFingerprint: boolean;
+  private sentryPromise?: Promise<typeof import('@sentry/browser')>;
+  private options: SentrySinkOptions;
 
   constructor(options: SentrySinkOptions) {
     this.threshold = LEVEL_PRIORITY[options.levelThreshold ?? 'ERROR'] ?? 3;
     this.includeArgsInFingerprint = options.includeArgsInFingerprint ?? false;
-
-    Sentry.init({
-      dsn: options.dsn,
-      environment: options.environment ?? 'production',
-      release: options.release,
-    });
+    this.options = options;
   }
 
-  log(record: LogRecord): void {
+  private async getSentry() {
+    if (!this.sentryPromise) {
+      this.sentryPromise = import('@sentry/browser').then((module) => {
+        // Initialize Sentry on first use
+        module.init({
+          dsn: this.options.dsn,
+          environment: this.options.environment ?? 'production',
+          release: this.options.release,
+        });
+        return module;
+      });
+    }
+    return this.sentryPromise;
+  }
+
+  async log(record: LogRecord): Promise<void> {
+    const Sentry = await this.getSentry();
     const levelPriority = LEVEL_PRIORITY[record.level] ?? 99;
     if (levelPriority < this.threshold) return;
 

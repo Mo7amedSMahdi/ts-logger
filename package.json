@@ -10,6 +10,11 @@
       "import": "./dist/esm/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./node": {
+      "import": "./dist/esm/node.js",
+      "require": "./dist/node.js",
+      "types": "./dist/node.d.ts"
     }
   },
   "files": [
@@ -51,5 +56,17 @@
   "dependencies": {
     "@sentry/browser": "^9.30.0",
     "@sentry/node": "^9.30.0"
+  },
+  "peerDependencies": {
+    "@sentry/browser": "^9.30.0",
+    "@sentry/node": "^9.30.0"
+  },
+  "peerDependenciesMeta": {
+    "@sentry/browser": {
+      "optional": true
+    },
+    "@sentry/node": {
+      "optional": true
+    }
   }
 }

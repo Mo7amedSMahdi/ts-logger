@@ -2,6 +2,8 @@
 
 A powerful, modular, and extensible TypeScript logger designed for modern web and Node.js applications. Supports custom log levels, pluggable sinks, rate limiting, source tagging, and Sentry integration.
 
+**✨ Lightweight Core**: Only ~3-4k gzipped for core functionality, with optional integrations loaded on-demand.
+
 ---
 
 ## ✨ Features
@@ -14,36 +16,49 @@ A powerful, modular, and extensible TypeScript logger designed for modern web an
 - ✅ Rate limiting to prevent log spam
 - ✅ Source tagging via `Error().stack`
 - ✅ In-memory logs for testing
-- ✅ Sentry integration with clean error attribution
+- ✅ **Lazy-loaded integrations** (Sentry, FileSink)
 - ✅ ESM compatible
 
 ---
 
 ## 📦 Installation
 
+### Core Package
+
 ```bash
-pnpm add @mohamed-s/ts-logger
+npm install @mohamed-s/ts-logger
 # or
 yarn add @mohamed-s/ts-logger
+```
+
+### Optional Integrations
+
+For **Sentry integration**, install Sentry SDK in your project:
+
+```bash
+# For browser/React projects
+npm install @sentry/browser
+
+# For Node.js projects
+npm install @sentry/node
 ```
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Create a Preconfigured Singleton Logger
+### For React/Browser Projects
 
 **`src/utils/loggerInstance.ts`**
 
 ```ts
-import { Logger, ConsoleSink, MemorySink, SentrySink } from '@mohamed-s/ts-logger';
+import { Logger, ConsoleSink, SentrySink } from '@mohamed-s/ts-logger';
 
 export const logger = new Logger({
   minLevel: 'DEBUG',
   enableSourceTagging: true,
   sinks: [
     new ConsoleSink(),
-    new MemorySink(),
     new SentrySink({
       dsn: 'https://your-project@sentry.io/123456',
       environment: 'production',
@@ -54,6 +69,34 @@ export const logger = new Logger({
   contextProvider: () => ({
     userId: 'abc123',
     sessionId: 'xyz789',
+  }),
+});
+```
+
+### For Node.js Projects
+
+**`src/utils/loggerInstance.ts`**
+
+```ts
+import { Logger, ConsoleSink, SentrySink } from '@mohamed-s/ts-logger';
+import { FileSink } from '@mohamed-s/ts-logger/node'; // Node.js only
+
+export const logger = new Logger({
+  minLevel: 'DEBUG',
+  enableSourceTagging: true,
+  sinks: [
+    new ConsoleSink(),
+    new FileSink('./logs/app.log'),
+    new SentrySink({
+      dsn: 'https://your-project@sentry.io/123456',
+      environment: 'production',
+      release: '1.0.0',
+      levelThreshold: 'ERROR',
+    }),
+  ],
+  contextProvider: () => ({
+    nodeVersion: process.version,
+    pid: process.pid,
   }),
 });
 ```
@@ -110,12 +153,13 @@ new RemoteSink('https://your-api.com/logs', {
 ### 📁 FileSink (Node.js only)
 
 ```ts
-import { FileSink } from '@mohamed-s/ts-logger';
+import { FileSink } from '@mohamed-s/ts-logger/node';
 new FileSink('./logs/app.log');
 ```
 
 - Writes logs to disk (Node only)
 - Guards against browser usage
+- **Import separately** to avoid bundling in browser apps
 
 ---
 
@@ -130,11 +174,45 @@ new SentrySink({
 });
 ```
 
+- **Lazy-loaded**: Sentry SDK is only loaded when first log is sent
 - Sends warnings/errors to Sentry
 - Automatically uses `originalError` stack if passed
 - Adds tags and custom context
 
+**📋 Prerequisites**: Install Sentry SDK separately:
+
+```bash
+# Choose based on your environment
+npm install @sentry/browser    # For React/browser
+npm install @sentry/node       # For Node.js
+```
+
 > **Best practice:** Always pass the actual `Error` to preserve stack trace in Sentry
+
+---
+
+## 🌍 Environment-Specific Usage
+
+### Browser/React Applications
+
+```ts
+import { Logger, ConsoleSink, SentrySink, RemoteSink } from '@mohamed-s/ts-logger';
+
+const logger = new Logger({
+  sinks: [new ConsoleSink(), new SentrySink({ dsn: 'your-dsn' }), new RemoteSink('/api/logs')],
+});
+```
+
+### Node.js Applications
+
+```ts
+import { Logger, ConsoleSink, SentrySink } from '@mohamed-s/ts-logger';
+import { FileSink } from '@mohamed-s/ts-logger/node';
+
+const logger = new Logger({
+  sinks: [new ConsoleSink(), new FileSink('./logs/app.log'), new SentrySink({ dsn: 'your-dsn' })],
+});
+```
 
 ---
 
@@ -161,6 +239,15 @@ rateLimit: {
   maxLogs: 10       // max 10 logs per interval
 }
 ```
+
+---
+
+## 📦 Bundle Size
+
+- **Core package**: ~3-4k gzipped
+- **With Sentry**: Sentry SDK loaded only when used
+- **With FileSink**: Node.js only, separate import
+- **Tree-shakeable**: Only import what you need
 
 ---
 
